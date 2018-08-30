@@ -4,7 +4,9 @@
 	"description": "Start pack for Front-end develop",
 	"author": "Ivan Ivanov",
 	"license": "MIT",
-	"dependencies": {},
+	"dependencies": {
+		"imagemin-jpeg-recompress": "^5.1.0"
+	},
 	"scripts": {
 		"gulp": "gulp"
 	},

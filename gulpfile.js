@@ -1,5 +1,4 @@
 ﻿'use strict';
-
 var gulp = require('gulp'), //основной плагин gulp
   sass = require('gulp-sass'),
   notify = require('gulp-notify'),
@@ -8,6 +7,7 @@ var gulp = require('gulp'), //основной плагин gulp
   uglify = require('gulp-uglify'), //минификация js
   rigger = require('gulp-rigger'), //работа с инклюдами в html и js
   imagemin = require('gulp-imagemin'), //минимизация изображений
+  imageminJpegRecompress = require('imagemin-jpeg-recompress'), //дополнительный плагин для минификации
   rimraf = require('rimraf'), //очистка
   sourcemaps = require('gulp-sourcemaps'), //sourcemaps
   rename = require("gulp-rename"), //переименвоание файлов
@@ -70,14 +70,17 @@ gulp.task('html:build', function () {
 // билдим статичные изображения
 gulp.task('image:build', function () {
   gulp.src(path.src.img) //Выберем наши картинки
-    .pipe(imagemin({ //Сожмем их
-      progressive: true, //сжатие .jpg
-      svgoPlugins: [{
-        removeViewBox: false
-			}], //сжатие .svg
-      interlaced: true, //сжатие .gif
-      optimizationLevel: 3 //степень сжатия от 0 до 7
-    }))
+    .pipe(imagemin([
+      imagemin.gifsicle(),
+      imageminJpegRecompress({
+        loops: 4,
+        min: 50,
+        max: 95,
+        quality: 'high'
+      }),
+      imagemin.optipng(),
+      imagemin.svgo()
+    ]))
     .pipe(gulp.dest(path.build.img)) //выгрузим в build
     .pipe(connect.reload()) //перезагрузим сервер
 });
@@ -85,14 +88,17 @@ gulp.task('image:build', function () {
 // билдим динамичные изображения
 gulp.task('imagescontent:build', function () {
   gulp.src(path.src.contentImg)
-    .pipe(imagemin({ //Сожмем их
-      progressive: true, //сжатие .jpg
-      svgoPlugins: [{
-        removeViewBox: false
-			}], //сжатие .svg
-      interlaced: true, //сжатие .gif
-      optimizationLevel: 3 //степень сжатия от 0 до 7
-    }))
+    .pipe(imagemin([
+      imagemin.gifsicle(),
+      imageminJpegRecompress({
+        loops: 4,
+        min: 70,
+        max: 80,
+        quality: 'high'
+      }),
+      imagemin.optipng(),
+      imagemin.svgo()
+    ]))
     .pipe(gulp.dest(path.build.contentImg)) //выгрузим в build
     .pipe(connect.reload()) //перезагрузим сервер
 });
@@ -112,12 +118,12 @@ gulp.task('js:build', function () {
 // билдинг домашнего css
 gulp.task('cssOwn:build', function () {
   gulp.src(path.src.css) //Выберем наш основной файл стилей
-    .pipe(sourcemaps.init()) //инициализируем soucemap
+    //    .pipe(sourcemaps.init()) //инициализируем soucemap
     .pipe(sass().on('error', function () {
-    gulp.src(path.src.css)
-    .pipe(notify("🤔🤔🤔🤔🤔")) //уведомление об ошибке
-    .pipe(sass().on('error', sass.logError )) //Скомпилируем sass
-}))
+      gulp.src(path.src.css)
+        .pipe(notify("🤔🤔🤔🤔🤔")) //уведомление об ошибке
+        .pipe(sass().on('error', sass.logError)) //Скомпилируем sass
+    }))
     .pipe(prefixer({
       browsers: ['last 3 version', "> 1%", "ie 8", "ie 7"]
     })) //Добавим вендорные префиксы
