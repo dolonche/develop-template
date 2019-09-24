@@ -1,6 +1,5 @@
 header {
   font-family: "Open sans";
-  background-color: turquoise;
   width: 100vw;
   height: 100vh;
   position: relative;
@@ -8,7 +7,7 @@ header {
 
 div {
   @extend %center;
-  color: #fff;
+  color: #000;
   font-size: 48px;
   font-weight: 100;
 }
