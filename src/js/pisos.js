@@ -4,4 +4,5 @@ document.addEventListener('click', function() {
 	} else {
 		document.querySelector('header').style.backgroundColor = 'rgb(64, 224, 208)';
 	}
+	console.log('pisos3309809');
 })

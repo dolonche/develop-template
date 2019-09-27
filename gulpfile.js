@@ -15,7 +15,14 @@ var gulp = require('gulp'),
   watch = require('gulp-watch'),
   connect = require('gulp-connect'),
   webpack = require('webpack'),
-  webpackStream = require('webpack-stream');
+  gutil = require("gulp-util"),
+  webpackConfig = require('./webpack.config.js'),
+  webpackStream = require('webpack-stream'),
+  notifier = require('node-notifier'),
+  statsLog = {
+    colors: true,
+    reasons: true
+  };
 
 var path = {
   build: {
@@ -101,39 +108,37 @@ gulp.task('imagescontent:build', function() {
     .pipe(connect.reload())
 });
 
-gulp.task('js:build', function() {
-  return gulp.src('./src/js/app.js')
-    .pipe(webpackStream({
-      output: {
-        filename: 'app.js',
-      },
-      module: {
-        rules: [{
-            test: /\.(js)$/,
-            exclude: /(node_modules)/,
-            loader: 'babel-loader',
-            query: {
-              presets: ['@babel/preset-env']
-            }
-          },
-          {
-            test: /\.css$/,
-            use: [
-              'style-loader',
-              'css-loader',
-              'sass-loader'
-            ]
-          }
-        ]
-      },
-      externals: {
-        // jquery: 'jQuery'
-      }
-    }))
-    .pipe(gulp.dest(path.build.js))
-    .pipe(uglify())
-    .pipe(rename({ suffix: '.min' }))
-    .pipe(gulp.dest(path.build.js))
+gulp.task('js:build', (done) => {
+  webpack(webpackConfig, onComplete);
+
+  function onComplete(error, stats) {
+    if (error) {
+      onError(error);
+    } else if (stats.hasErrors()) {
+      onError(stats.toString(statsLog));
+    } else {
+      onSuccess(stats.toString(statsLog));
+    }
+  }
+
+  function onError(error) {
+    let formatedError = new gutil.PluginError('webpack', error);
+    notifier.notify({
+      title: `Error: ${formatedError.plugin}`,
+      message: formatedError.message
+    });
+    done(formatedError);
+  }
+
+  function onSuccess(detailInfo) {
+    gutil.log('[webpack]', detailInfo);
+    done();
+  }
+  gulp.src(path.src.js)
+    // .pipe(gulp.dest(path.build.js))
+    // .pipe(uglify())
+    // .pipe(rename({ suffix: '.min' }))
+    // .pipe(gulp.dest(path.build.js))
     .pipe(connect.reload());
 });
 gulp.task('cssOwn:build', function() {
@@ -165,31 +170,28 @@ gulp.task('cssOwn:build', function() {
 // });
 // билдинг вендорного css
 gulp.task('cssVendor:build', function() {
-  gulp.src(path.src.cssVendor) 
-    .pipe(sourcemaps.init()) 
+  gulp.src(path.src.cssVendor)
+    .pipe(sourcemaps.init())
     .pipe(cssmin())
-    .pipe(sourcemaps.write()) 
-    .pipe(gulp.dest(path.build.css)) 
-    .pipe(connect.reload()) 
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest(path.build.css))
+    .pipe(connect.reload())
 
 });
 
-// билдим css целиком
 gulp.task('css:build', [
   'cssOwn:build',
   // 'cssVendor:build'
 ]);
 
-// билдим шрифты
 gulp.task('fonts:build', function() {
   gulp.src(path.src.fonts)
-    .pipe(gulp.dest(path.build.fonts)) 
+    .pipe(gulp.dest(path.build.fonts))
 });
 
-// билдим htaccess
 gulp.task('htaccess:build', function() {
   gulp.src(path.src.htaccess)
-    .pipe(gulp.dest(path.build.htaccess)) 
+    .pipe(gulp.dest(path.build.htaccess))
 });
 gulp.task('notify', function() {
   gulp.src(path.src.html)
