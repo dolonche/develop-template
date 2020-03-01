@@ -2,5 +2,6 @@
 @import 'partial/global/fonts';
 @import 'partial/global/variable';
 @import 'partial/global/mixins';
-@import 'partial/blocks/header';
+@import 'partial/global/default';
+@import 'partial/blocks/page-header';
 @import '../../node_modules/slick-carousel/slick/slick.scss';
