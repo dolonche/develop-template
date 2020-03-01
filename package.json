@@ -9,7 +9,7 @@
 		"imagemin-mozjpeg": "^8.0.0",
 		"imagemin-pngquant": "^8.0.0",
 		"imagemin-zopfli": "^6.0.0",
-		"npm": "^6.11.3",
+		"npm": "^6.13.4",
 		"slick-carousel": "^1.8.1"
 	},
 	"scripts": {
